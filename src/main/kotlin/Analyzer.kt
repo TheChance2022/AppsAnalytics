@@ -1,81 +1,86 @@
 import model.App
 import utilities.calculatePercentage
-import utilities.convertToByte
-import java.math.BigDecimal
 
 class Analyzer {
 
     /**
-     * @param apps is a list of app class
-     * @param companyName is string
      * @return number of apps with given companyName.
      * */
-    fun findNumberOfAppsByCompanyName(apps: List<App>, companyName:String):Int {
-        return if (apps.isNotEmpty() && companyName.isNotEmpty())
-            apps.count { it.company.contains(companyName.trim(), true) }
-        else
+    fun findNumberOfAppsByCompanyName(apps: List<App>, companyName: String): Int {
+        return if (apps.isNotEmpty() && companyName.isNotEmpty()) {
+            return apps.count { it.company.contains(companyName.trim(), true) }
+        } else {
             -1
+        }
     }
 
     /**
-     * @param apps is a list of App class
      * @return the oldest app in given list.
      * */
-    fun findOldestApp(apps: List<App>): String? =
-        if (apps.isNotEmpty()) {
-            apps.minByOrNull { it.updatedDate }!!.appName} else null
+    fun findOldestApp(apps: List<App>): String? {
+        return if (apps.isNotEmpty()) {
+            apps.minByOrNull { it.updatedDate }!!.appName
+        } else {
+            null
+        }
+    }
+
 
     /**
-     * @param apps is a list of app class
-     * @param version is string of android version
      * @return the parentage of given version.
      * */
-    fun getPercentageAppsRunningOnSpecificVersion(apps: List<App>, version:Double): Double =
-        calculatePercentage(apps.count{ it.requiresAndroid != null && it.requiresAndroid == version }, apps.size)
+    fun getPercentageAppsRunningOnSpecificVersion(apps: List<App>, version: Double): Double {
+        return calculatePercentage(
+            apps.count { it.requiresAndroid != null && it.requiresAndroid == version },
+            apps.size
+        )
+    }
 
 
     /**
-     * @param apps is a list of app class
-     * @param categoryName is string of category that we need know
      * @return a percentage of given category from give list.
      * */
-    fun getPercentageOfCategory(apps: List<App>,categoryName:String):Double =
-        if (apps.isNotEmpty() && categoryName.isNotEmpty())
+    fun getPercentageOfCategory(apps: List<App>, categoryName: String): Double {
+        return if (apps.isNotEmpty() && categoryName.isNotEmpty()) {
             calculatePercentage(
                 apps.count { it.category.contains(categoryName.trim(), true) },
-                apps.size)
-        else -1.0
-
-
-    fun getLargestApp(apps: List<App>,size:Int):List<String>?{
-        if (apps.isNotEmpty() && size <= apps.size ) {
-            val list = mutableMapOf<App,BigDecimal>()
-
-            apps.filterNot { it.size.contains("Varies", true) }
-                .apply {
-                    onEach {
-                        val value = convertToByte(it.size)
-                        if(value!=null)
-                            list[it] = value
-                    }
-                }
-            return list.toList().sortedByDescending { (_, value) -> value}.toMap()
-                .keys.map { it-> it.appName }.toList().take(size)
+                apps.size
+            )
+        } else {
+            -1.0
         }
-        return null
+    }
+
+
+    fun getLargestApp(listOfGooglePlayApp: List<App>, size: Int): List<String>? {
+        val listOfAppName: MutableList<String> = mutableListOf()
+        if (listOfGooglePlayApp.size > size) {
+            listOfGooglePlayApp.sortedByDescending { it.size }.subList(0, size).forEach {
+                listOfAppName.add(it.appName)
+            }
+        } else {
+            listOfGooglePlayApp.sortedByDescending { it.size }.forEach {
+                listOfAppName.add(it.appName)
+            }
+        }
+        if (listOfAppName.size == 0) {
+            return null
+        }
+        return listOfAppName
     }
 
     /**
-     * @param apps is a list of app class
-     * @param size is Integer to give the user free to enter any number to return top install app depend on it
-     * @return a top ten app install from give list if the list is not null or empty
+     * @param rankNumber is Integer to give the user free to enter any number to return top installed apps depend on it
+     * @return a top N apps install from given list if the list is not null or empty
      * */
-    fun topTenAppInstall(apps: List<App>, size: Int): List<String>? =
-        if (apps.isNotEmpty() && size > 0)
+    fun topNAppsInstall(apps: List<App>, rankNumber: Int): List<String>? =
+        if (apps.isNotEmpty() && rankNumber > 0) {
             apps.asSequence()
                 .sortedByDescending { dataSorted -> dataSorted.installs }
                 .map { data -> data.appName }
-                .take(size)
+                .take(rankNumber)
                 .toList()
-        else null
+        } else {
+            null
+        }
 }
