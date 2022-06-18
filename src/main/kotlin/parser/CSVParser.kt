@@ -1,17 +1,19 @@
 package parser
 
+import convertStringToDate
+import interfaces.DataSource
 import model.App
+import toMegaByteSize
 import utilities.Constant
-import utilities.convertStringToDate
-import utilities.convertToDouble
+import utilities.Converter
 import java.io.File
 
-class AppParser (private val fileName: String){
+class CSVParser(private val fileName: String, private val converter: Converter) : DataSource {
 
     /**
      * @return list of apps after parsed from DataSet without repetition
      * */
-    fun parseFile(): List<App> {
+    override fun getAllApps(): List<App> {
         val appList = mutableListOf<App>()
         File(fileName).apply {
             if (this.exists()) {
@@ -20,24 +22,24 @@ class AppParser (private val fileName: String){
                 }
             }
         }
-        return appList.distinctBy { Pair(it.appName, it.company)}
+        return appList.distinctBy { Pair(it.appName, it.company) }
     }
 
     /**
-     * @param s is line of dataSet
      * @return object of app
      * */
-    private fun addApp(s: String): App {
-        val mList = s.split(",")
+    private fun addApp(dataSetLine: String): App {
+        val mList = dataSetLine.split(",")
         return App(
             appName = mList[Constant.ColumnIndex.APP_NAME],
             company = mList[Constant.ColumnIndex.COMPANY],
             category = mList[Constant.ColumnIndex.CATEGORY],
-            updatedDate = convertStringToDate(mList[Constant.ColumnIndex.UPDATE_DATE]),
-            size = mList[Constant.ColumnIndex.SIZE],
+            updatedDate = mList[Constant.ColumnIndex.UPDATE_DATE].convertStringToDate(),
+            size = mList[Constant.ColumnIndex.SIZE].toMegaByteSize(),
             installs = mList[Constant.ColumnIndex.INSTALLS].toLong(),
             currentVersion = mList[Constant.ColumnIndex.CURRENT_VERSION],
-            requiresAndroid = convertToDouble(mList[Constant.ColumnIndex.REQUIRED_ANDROID])
+            requiresAndroid = converter.convertToDouble(mList[Constant.ColumnIndex.REQUIRED_ANDROID])
         )
     }
+
 }
